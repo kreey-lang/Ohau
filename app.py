@@ -102,7 +102,7 @@ if menu == "🛒 Kasir (POS)":
                     st.rerun()
             
             st.markdown("---")
-            st.markdown(### f"Total Tagihan: Rp {total_belanja:,}")
+            st.markdown(f"### Total Tagihan: Rp {total_belanja:,}")
             
             metode_bayar = st.selectbox("Metode Pembayaran:", ["Tunai (Cash)", "QRIS", "Transfer Bank"])
             
