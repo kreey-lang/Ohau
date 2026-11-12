@@ -1,15 +1,30 @@
 import streamlit as st
 from google import genai
 from PIL import Image
-import os
 
-st.set_page_config(page_title="KafeReceipt AI - Auditor Keuangan", page_icon="☕", layout="centered")
+# Konfigurasi Tampilan Utama Web Kafe
+st.set_page_config(
+    page_title="KafeReceipt AI - Auditor Keuangan", 
+    page_icon="☕", 
+    layout="centered"
+)
 
 st.title("☕ KafeReceipt AI Auditor")
-st.write("Aplikasi cerdas pencatat dan pengelompokan pengeluaran kafe secara instan dari foto struk.")
+st.write("Aplikasi pencatat dan pengelompokan pengeluaran kafe secara instan dari foto struk.")
 
-api_key = st.text_input("Masukkan Google Gemini API Key / Token:", type="password")
+# Mengambil API Key secara otomatis dari Streamlit Secrets (Aman untuk owner kafe)
+# Jika belum diset di server, sediakan input teks darurat
+api_key = None
+try:
+    if "GEMINI_API_KEY" in st.secrets:
+        api_key = st.secrets["GEMINI_API_KEY"]
+except Exception:
+    pass
 
+if not api_key:
+    api_key = st.text_input("Masukkan Google Gemini API Key:", type="password")
+
+# Area Upload Foto Struk
 uploaded_file = st.file_uploader("Upload Foto Struk / Nota Belanja Kafe", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
@@ -18,13 +33,11 @@ if uploaded_file is not None:
     
     if st.button("Analisis Struk Kafe"):
         if not api_key:
-            st.warning("Mohon masukkan API Key terlebih dahulu, Bro!")
+            st.warning("Mohon masukkan API Key terlebih dahulu!")
         else:
             with st.spinner("AI sedang membaca struk dan memilah pos pengeluaran kafe..."):
                 try:
-                    # Mengatur environment variable untuk mendeteksi token GCP/AI Studio secara fleksibel
-                    os.environ["GEMINI_API_KEY"] = api_key
-                    
+                    # Inisialisasi Client Google GenAI
                     client = genai.Client(api_key=api_key)
                     
                     prompt_kafe = (
@@ -37,8 +50,9 @@ if uploaded_file is not None:
                         "Sertakan juga Total Pengeluaran di bagian akhir."
                     )
                     
+                    # Pemanggilan model stabil terbaru untuk multimodal
                     response = client.models.generate_content(
-                        model='gemini-1.5-flash',
+                        model='gemini-2.0-flash',
                         contents=[image, prompt_kafe]
                     )
                     
@@ -48,4 +62,3 @@ if uploaded_file is not None:
                     
                 except Exception as e:
                     st.error(f"Terjadi kesalahan teknis: {e}")
-                
