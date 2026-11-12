@@ -14,7 +14,6 @@ if "profil" not in st.session_state:
     st.session_state.profil = {"nama": "Kafe Ohau", "pemilik": "Owner", "kategori": "Kafe / Resto"}
 
 if "produk" not in st.session_state:
-    # Contoh produk awal
     st.session_state.produk = pd.DataFrame([
         {"ID": 1, "Nama": "Kopi Susu Gula Aren", "Kategori": "Minuman", "Harga Jual": 18000, "Modal": 10000, "Stok": 50},
         {"ID": 2, "Nama": "Nasi Goreng Spesial", "Kategori": "Makanan", "Harga Jual": 25000, "Modal": 14000, "Stok": 30},
@@ -48,13 +47,12 @@ if menu == "🛒 Kasir (POS)":
     col1, col2 = st.columns([2, 1])
     
     with col1:
-        st.subheader("Datalog Menu Tersedia")
+        st.subheader("Daftar Menu Tersedia")
         df_prod = st.session_state.produk
         
         if df_prod.empty:
             st.warning("Belum ada produk. Tambahkan produk di menu Kelola Produk.")
         else:
-            # Tampilkan pilihan produk untuk dibeli
             for index, row in df_prod.iterrows():
                 c1, c2, c3, c4 = st.columns([3, 2, 2, 2])
                 c1.write(f"**{row['Nama']}**")
@@ -67,7 +65,6 @@ if menu == "🛒 Kasir (POS)":
                     if row['Stok'] <= 0:
                         st.error("Stok habis, Bro!")
                     else:
-                        # Masukkan ke keranjang
                         item_ada = False
                         for item in st.session_state.keranjang:
                             if item['ID'] == row['ID']:
@@ -109,21 +106,18 @@ if menu == "🛒 Kasir (POS)":
             if st.button("Selesaikan Pembayaran & Cetak Struk", type="primary"):
                 waktu_sekarang = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 
-                # Catat transaksi ke riwayat
                 transaksi_baru = {
                     "Waktu": waktu_sekarang,
-                    "Item": st.markdown(f"### Total Tagihan: Rp {total_belanja:,}")
+                    "Item": st.session_state.keranjang.copy(),
                     "Total Omzet": total_belanja,
                     "Total Modal": sum([it['Modal'] * it['Qty'] for it in st.session_state.keranjang]),
                     "Metode": metode_bayar
                 }
                 st.session_state.transaksi.append(transaksi_baru)
                 
-                # Kurangi stok produk asli
                 for item in st.session_state.keranjang:
                     st.session_state.produk.loc[st.session_state.produk['ID'] == item['ID'], 'Stok'] -= item['Qty']
                 
-                # Reset keranjang
                 st.session_state.keranjang = []
                 st.success("Transaksi Berhasil Dicatat ke Pembukuan! 🎉")
                 st.balloons()
@@ -153,7 +147,6 @@ elif menu == "📦 Kelola Produk & Stok":
     st.subheader("Daftar Produk & Stok Saat Ini")
     st.dataframe(st.session_state.produk, use_container_width=True)
     
-    # Peringatan stok menipis otomatis
     st.subheader("⚠️ Peringatan Stok Menipis")
     stok_tipis = st.session_state.produk[st.session_state.produk['Stok'] <= 5]
     if not stok_tipis.empty:
@@ -246,3 +239,4 @@ elif menu == "⚙️ Setup Profil Toko":
             st.session_state.profil = {"nama": nama_toko, "pemilik": nama_owner, "kategori": kat_toko}
             st.success("Profil toko berhasil diperbarui!")
             st.rerun()
+                                
