@@ -51,8 +51,9 @@ if uploaded_file is not None:
                         "Sertakan juga Total Pengeluaran di bagian akhir."
                     )
                     
+                    # Menggunakan model llama-3.2-11b-vision-preview yang stabil
                     chat_completion = client.chat.completions.create(
-                        model="meta-llama/llama-3.2-11b-vision-instruct",
+                        model="llama-3.2-11b-vision-preview",
                         messages=[
                             {
                                 "role": "user",
@@ -76,3 +77,4 @@ if uploaded_file is not None:
                     
                 except Exception as e:
                     st.error(f"Terjadi kesalahan teknis Groq: {e}")
+                    
