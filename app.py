@@ -13,7 +13,6 @@ st.title("☕ KafeReceipt AI Auditor")
 st.write("Aplikasi pencatat dan pengelompokan pengeluaran kafe secara instan dari foto struk.")
 
 # Mengambil API Key secara otomatis dari Streamlit Secrets (Aman untuk owner kafe)
-# Jika belum diset di server, sediakan input teks darurat
 api_key = None
 try:
     if "GEMINI_API_KEY" in st.secrets:
@@ -50,9 +49,9 @@ if uploaded_file is not None:
                         "Sertakan juga Total Pengeluaran di bagian akhir."
                     )
                     
-                    # Pemanggilan model stabil terbaru untuk multimodal
+                    # Menggunakan model terbaru gemini-3.8-flash sesuai instruksi sistem
                     response = client.models.generate_content(
-                        model='gemini-2.0-flash',
+                        model='gemini-3.8-flash',
                         contents=[image, prompt_kafe]
                     )
                     
@@ -62,3 +61,4 @@ if uploaded_file is not None:
                     
                 except Exception as e:
                     st.error(f"Terjadi kesalahan teknis: {e}")
+                
