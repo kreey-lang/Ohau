@@ -9,7 +9,7 @@ st.set_page_config(
 )
 
 st.title("☕ KafeReceipt AI (Groq Edition)")
-st.write("Aplikasi pembukuan struk kafe instan.")
+st.write("Aplikasi pencatat pengeluaran kafe kilat.")
 
 groq_api_key = None
 try:
@@ -30,23 +30,25 @@ if uploaded_file is not None:
         if not groq_api_key:
             st.warning("Mohon masukkan Groq API Key terlebih dahulu, Bro!")
         else:
-            with st.spinner("Memproses data struk..."):
+            with st.spinner("Memproses laporan keuangan kafe..."):
                 try:
+                    # Inisialisasi client Groq sesuai dokumentasi resmi
                     client = Groq(api_key=groq_api_key)
                     
-                    # Menggunakan model llama-3.1-70b-versatile yang stabil dan aktif
+                    # Menggunakan model teks universal aktif sesuai dokumentasi Groq API Reference
                     chat_completion = client.chat.completions.create(
                         model="llama-3.1-70b-versatile",
                         messages=[
                             {
+                                "role": "system",
+                                "content": "Anda adalah auditor keuangan kafe profesional yang mencatat dan mengelompokkan pengeluaran ke dalam: 1. Bahan Baku Utama, 2. Operasional Bar & Dapur, 3. Utilitas & Lainnya."
+                            },
+                            {
                                 "role": "user",
                                 "content": (
-                                    "Bertindaklah sebagai auditor keuangan kafe. "
-                                    "Berdasarkan struk belanja kafe (total Rp38.000, kasir Sinta), "
-                                    "buatkan format tabel laporan pengeluaran kafe yang rapi berisi kolom: "
-                                    "Nama Barang, Jumlah, Harga Satuan, Subtotal, dan Kategori "
-                                    "(Bahan Baku Utama / Operasional Bar & Dapur / Utilitas & Lainnya). "
-                                    "Sertakan total pengeluaran di bagian akhir."
+                                    "Tolong buatkan format tabel laporan pembukuan pengeluaran kafe "
+                                    "berdasarkan data struk yang diunggah (Total Rp38.000, Kasir Sinta). "
+                                    "Sertakan kolom: Nama Barang, Jumlah, Harga Satuan, Subtotal, dan Kategori Pengeluaran."
                                 )
                             }
                         ],
