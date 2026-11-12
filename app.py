@@ -32,6 +32,7 @@ if uploaded_file is not None:
                     "Sertakan juga Total Pengeluaran di bagian akhir."
                 )
                 
+                # Mengirim gambar dan prompt dengan format aman untuk library genai terbaru
                 response = client.models.generate_content(
                     model='gemini-1.5-flash',
                     contents=[image, prompt_kafe]
@@ -40,4 +41,3 @@ if uploaded_file is not None:
                 st.success("Analisis Pembukuan Selesai!")
                 st.markdown("### 📊 Laporan Keuangan Kafe:")
                 st.markdown(response.text)
-              
