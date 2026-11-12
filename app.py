@@ -112,7 +112,7 @@ if menu == "🛒 Kasir (POS)":
                 # Catat transaksi ke riwayat
                 transaksi_baru = {
                     "Waktu": waktu_sekarang,
-                    "Item": st.session_state.keranjang.copy(),
+                    "Item": st.markdown(f"### Total Tagihan: Rp {total_belanja:,}")
                     "Total Omzet": total_belanja,
                     "Total Modal": sum([it['Modal'] * it['Qty'] for it in st.session_state.keranjang]),
                     "Metode": metode_bayar
