@@ -2,70 +2,75 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# Konfigurasi Halaman
+# Konfigurasi Halaman (Lebar agar layout Moka POS kiri-kanan pas)
 st.set_page_config(
-    page_title="Ohau AI POS - Kasir Profesional", 
+    page_title="Ohau AI POS - Professional", 
     page_icon="⚡", 
     layout="wide"
 )
 
-# Custom CSS Ala Moka POS Professional UI
+# Custom CSS Ala Moka POS (Grid Kiri, Keranjang Kanan, Dark Mode Elegan)
 st.markdown("""
     <style>
     .stApp {
         background-color: #0d1117;
-        color: #e6edf3;
+        color: #f0f6fc;
     }
-    /* Sembunyikan header/footer bawaan streamlit */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* Branding Header Ohau AI */
-    .pos-header {
-        background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-        padding: 15px 20px;
-        border-radius: 12px;
-        border: 1px solid #374151;
+    /* Header POS */
+    .pos-top-bar {
+        background: #161b22;
+        padding: 12px 20px;
+        border-radius: 8px;
+        border: 1px solid #30363d;
         margin-bottom: 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
     
-    /* Grid Kartu Menu ala Moka */
-    .moka-card {
+    /* Grid Kartu Menu */
+    .moka-product-box {
         background: #161b22;
         border: 1px solid #30363d;
-        padding: 14px;
+        padding: 15px;
         border-radius: 10px;
         text-align: center;
-        box-shadow: 0 3px 6px rgba(0,0,0,0.4);
         margin-bottom: 12px;
-        transition: all 0.2s ease-in-out;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        transition: 0.2s;
     }
-    .moka-card:hover {
+    .moka-product-box:hover {
         border-color: #238636;
-        transform: translateY(-2px);
     }
-    .moka-title {
+    .prod-name {
         font-size: 15px;
-        font-weight: 700;
+        font-weight: bold;
         color: #f0f6fc;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
     }
-    .moka-price {
+    .prod-price {
         font-size: 14px;
         color: #3fb950;
         font-weight: bold;
-        margin-bottom: 2px;
+        margin-bottom: 4px;
     }
-    .moka-stock {
+    .prod-stock {
         font-size: 11px;
         color: #8b949e;
-        margin-bottom: 8px;
     }
     
-    /* Tombol Konsisten */
+    /* Panel Keranjang Kanan */
+    .cart-container {
+        background: #161b22;
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid #30363d;
+    }
+    
+    /* Tombol */
     .stButton>button {
         border-radius: 6px;
         font-weight: 600;
@@ -74,7 +79,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Inisialisasi Database Sementaranya (Session State)
+# Inisialisasi Database Sementara (Session State)
 if "profil" not in st.session_state:
     st.session_state.profil = {"nama": "Kafe Ohau Official", "pemilik": "Owner", "kategori": "Kafe & Resto"}
 
@@ -83,8 +88,7 @@ if "produk" not in st.session_state:
         {"ID": 1, "Nama": "Kopi Susu Gula Aren", "Kategori": "Minuman", "Harga Jual": 18000, "Modal": 10000, "Stok": 50},
         {"ID": 2, "Nama": "Nasi Goreng Spesial", "Kategori": "Makanan", "Harga Jual": 25000, "Modal": 14000, "Stok": 30},
         {"ID": 3, "Nama": "Es Teh Manis", "Kategori": "Minuman", "Harga Jual": 5000, "Modal": 2000, "Stok": 100},
-        {"ID": 4, "Nama": "Roti Bakar Coklat", "Kategori": "Snack", "Harga Jual": 15000, "Modal": 8000, "Stok": 25},
-        {"ID": 5, "Nama": "Dimsum Mentai", "Kategori": "Snack", "Harga Jual": 20000, "Modal": 11000, "Stok": 20}
+        {"ID": 4, "Nama": "Roti Bakar Coklat", "Kategori": "Snack", "Harga Jual": 15000, "Modal": 8000, "Stok": 25}
     ])
 
 if "transaksi" not in st.session_state:
@@ -96,39 +100,40 @@ if "pengeluaran" not in st.session_state:
 if "keranjang" not in st.session_state:
     st.session_state.keranjang = []
 
-# Sidebar Navigasi Menu ala POS Komersial
+# Sidebar Navigasi Menu
 st.sidebar.title("⚡ Ohau AI POS")
 st.sidebar.markdown(f"📍 **{st.session_state.profil['nama']}**")
 st.sidebar.markdown("---")
 
 menu = st.sidebar.radio(
-    "Menu Navigasi:", 
-    ["🛒 Kasir Utama (POS)", "📦 Kelola Produk & Stok", "💸 Catat Pengeluaran", "📊 Laporan & Grafik", "⚙️ Setup Profil Toko"]
+    "Navigasi Utama:", 
+    ["🛒 Kasir Utama (POS Moka)", "📦 Kelola Produk & Stok", "💸 Catat Pengeluaran", "📊 Laporan & Grafik", "⚙️ Setup Profil Toko"]
 )
 
 # ==========================================
-# 1. MENU KASIR UTAMA (MOKA STYLE GRID & CART)
+# 1. MENU KASIR UTAMA (LAYOUT ALA MOKA POS)
 # ==========================================
-if menu == "🛒 Kasir Utama (POS)":
-    # Header Identitas Toko ala Moka
+if menu == "🛒 Kasir Utama (POS Moka)":
+    # Top Bar ala Moka Register
     st.markdown(f"""
-        <div class="pos-header">
+        <div class="pos-top-bar">
             <div>
-                <h3 style="margin:0; color: #f0f6fc;">⚡ Ohau AI Register</h3>
-                <p style="margin:0; font-size:13px; color:#8b949e;">Kasir Aktif: <b>{st.session_state.profil['pemilik']}</b> | Toko: <b>{st.session_state.profil['nama']}</b></p>
+                <h3 style="margin:0; color: #f0f6fc;">⚡ Ohau Register POS</h3>
+                <p style="margin:0; font-size:12px; color:#8b949e;">Kasir: <b>{st.session_state.profil['pemilik']}</b> | Outlet: <b>{st.session_state.profil['nama']}</b></p>
             </div>
             <div>
-                <span style="background: #238636; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;">● Live Connected</span>
+                <span style="background: #238636; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">● Register Online</span>
             </div>
         </div>
     """, unsafe_allow_html=True)
     
+    # Bagi Layout Menjadi 2 Kolom Besar (Kiri Katalog Grid, Kanan Keranjang Checkout)
     col_katalog, col_keranjang = st.columns([1.6, 1])
     
     with col_katalog:
-        st.subheader("📋 Pilih Kategori Menu")
+        st.subheader("📋 Katalog Menu Produk")
         
-        # Filter Kategori ala Moka POS
+        # Filter Kategori ala Moka
         kategori_list = ["Semua"] + list(st.session_state.produk["Kategori"].unique())
         selected_kat = st.selectbox("Filter Kategori:", kategori_list, label_visibility="collapsed")
         
@@ -139,20 +144,20 @@ if menu == "🛒 Kasir Utama (POS)":
         if df_prod.empty:
             st.warning("Tidak ada produk dalam kategori ini.")
         else:
-            # Layout Grid 2 Kolom per Baris
+            # Grid Produk (2 kolom produk per baris)
             cols = st.columns(2)
             for index, row in df_prod.iterrows():
                 col_target = cols[index % 2]
                 with col_target:
                     st.markdown(f"""
-                        <div class="moka-card">
-                            <div class="moka-title">{row['Nama']}</div>
-                            <div class="moka-price">Rp {row['Harga Jual']:,}</div>
-                            <div class="moka-stock">Stok: {row['Stok']} pcs</div>
+                        <div class="moka-product-box">
+                            <div class="prod-name">{row['Nama']}</div>
+                            <div class="prod-price">Rp {row['Harga Jual']:,}</div>
+                            <div class="prod-stock">Stok: {row['Stok']}</div>
                         </div>
                     """, unsafe_allow_html=True)
                     
-                    if st.button(f"＋ Tambah", key=f"moka_add_{row['ID']}", use_container_width=True):
+                    if st.button(f"＋ Tambah", key=f"moka_grid_{row['ID']}", use_container_width=True):
                         if row['Stok'] <= 0:
                             st.error("Stok habis!")
                         else:
@@ -175,9 +180,10 @@ if menu == "🛒 Kasir Utama (POS)":
                             st.rerun()
 
     with col_keranjang:
-        st.subheader("🛍️ Current Order")
+        st.subheader("🛍️ Current Order (Keranjang)")
+        
         if not st.session_state.keranjang:
-            st.info("Keranjang kosong. Silakan tap menu di sebelah kiri.")
+            st.info("Keranjang masih kosong. Silakan pilih menu di sebelah kiri.")
         else:
             total_belanja = 0
             for i, item in enumerate(st.session_state.keranjang):
@@ -189,20 +195,20 @@ if menu == "🛒 Kasir Utama (POS)":
                 """, unsafe_allow_html=True)
                 total_belanja += item['Subtotal']
                 
-                # Tombol Kuantitas Cepat Ala POS
+                # Kontrol Qty di Keranjang
                 c_min, c_plus, c_del = st.columns(3)
-                if c_min.button("➖", key=f"m_min_{i}"):
+                if c_min.button("➖", key=f"mk_min_{i}"):
                     if item['Qty'] > 1:
                         item['Qty'] -= 1
                         item['Subtotal'] = item['Qty'] * item['Harga Jual']
                     else:
                         st.session_state.keranjang.pop(i)
                     st.rerun()
-                if c_plus.button("➕", key=f"m_plus_{i}"):
+                if c_plus.button("➕", key=f"mk_plus_{i}"):
                     item['Qty'] += 1
                     item['Subtotal'] = item['Qty'] * item['Harga Jual']
                     st.rerun()
-                if c_del.button("❌", key=f"m_del_{i}"):
+                if c_del.button("❌", key=f"mk_del_{i}"):
                     st.session_state.keranjang.pop(i)
                     st.rerun()
             
@@ -223,12 +229,12 @@ if menu == "🛒 Kasir Utama (POS)":
                 }
                 st.session_state.transaksi.append(transaksi_baru)
                 
-                # Potong stok otomatis
+                # Kurangi stok produk
                 for item in st.session_state.keranjang:
                     st.session_state.produk.loc[st.session_state.produk['ID'] == item['ID'], 'Stok'] -= item['Qty']
                 
                 st.session_state.keranjang = []
-                st.success("Transaksi Sukses & Tercatat di Pembukuan! 🎉")
+                st.success("Pembayaran Berhasil! Struk tercatat di sistem.")
                 st.balloons()
 
 # ==========================================
@@ -308,4 +314,3 @@ elif menu == "⚙️ Setup Profil Toko":
             st.session_state.profil["pemilik"] = nama_owner
             st.success("Profil berhasil diperbarui!")
             st.rerun()
-                            
