@@ -1,40 +1,50 @@
 import streamlit as st
-from google import genai
+from groq import Groq
 from PIL import Image
-import os
+import base64
+import io
 
+# Konfigurasi Tampilan Web Kafe
 st.set_page_config(
-    page_title="KafeReceipt AI - Auditor Keuangan", 
-    page_icon="☕", 
+    page_title="KafeReceipt AI - Groq Auditor", 
+    page_icon="⚡", 
     layout="centered"
 )
 
-st.title("☕ KafeReceipt AI Auditor")
-st.write("Aplikasi pencatat dan pengelompokan pengeluaran kafe secara instan dari foto struk.")
+st.title("⚡ KafeReceipt AI (Groq Edition)")
+st.write("Aplikasi pembukuan struk kafe super cepat menggunakan Groq AI.")
 
-api_key = None
+# Input API Key Groq (Bisa juga disimpan di st.secrets dengan nama GROQ_API_KEY)
+groq_api_key = None
 try:
-    if "GEMINI_API_KEY" in st.secrets:
-        api_key = st.secrets["GEMINI_API_KEY"]
+    if "GROQ_API_KEY" in st.secrets:
+        groq_api_key = st.secrets["GROQ_API_KEY"]
 except Exception:
     pass
 
-api_key = st.text_input("Masukkan Google Gemini API Key / Token:", value=api_key if api_key else "", type="password")
+groq_api_key = st.text_input("Masukkan Groq API Key (gampang didapat gratis di console.groq.com):", value=groq_api_key if groq_api_key else "", type="password")
 
+# Area Upload Foto Struk
 uploaded_file = st.file_uploader("Upload Foto Struk / Nota Belanja Kafe", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
     st.image(image, caption="Struk Belanja Kafe", use_container_width=True)
     
-    if st.button("Analisis Struk Kafe"):
-        if not api_key:
-            st.warning("Mohon masukkan API Key atau token terlebih dahulu, Bro!")
+    if st.button("Analisis Struk dengan Groq"):
+        if not groq_api_key:
+            st.warning("Mohon masukkan Groq API Key terlebih dahulu, Bro!")
         else:
-            with st.spinner("AI sedang membaca struk dan memilah pos pengeluaran kafe..."):
+            with st.spinner("Groq AI sedang memproses struk kilat..."):
                 try:
-                    os.environ["GEMINI_API_KEY"] = api_key
-                    client = genai.Client(api_key=api_key)
+                    # Konversi gambar PIL ke format base64 agar bisa dibaca Groq Vision API
+                    buffered = io.BytesIO()
+                    image.save(buffered, format="JPEG")
+                    img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+                    image_url = f"data:image/jpeg;base64,{img_str}"
+                    
+                    # Inisialisasi client Groq
+                    client = Groq(api_key=groq_api_key)
                     
                     prompt_kafe = (
                         "Tolong analisis foto struk belanja kafe ini. "
@@ -46,19 +56,30 @@ if uploaded_file is not None:
                         "Sertakan juga Total Pengeluaran di bagian akhir."
                     )
                     
-                    # Menggunakan model gemini-3.8-flash yang valid sesuai sistem
-                    response = client.models.generate_content(
-                        model='gemini-3.8-flash',
-                        contents=[image, prompt_kafe]
+                    # Memanggil model Llama 3 Vision di Groq
+                    chat_completion = client.chat.completions.create(
+                        model="llama-3.2-11b-vision-preview",
+                        messages=[
+                            {
+                                "role": "user",
+                                "content": [
+                                    {"type": "text", "text": prompt_kafe},
+                                    {
+                                        "type": "image_url",
+                                        "image_url": {"url": image_url}
+                                    },
+                                ],
+                            }
+                        ],
+                        temperature=0.1,
                     )
                     
-                    if response and response.text:
-                        st.success("Analisis Pembukuan Selesai!")
-                        st.markdown("### 📊 Laporan Keuangan Kafe:")
-                        st.markdown(response.text)
-                    else:
-                        st.error("Gagal mendapatkan respons dari AI.")
-                        
-                except Exception as e:
-                    st.error(f"Terjadi kesalahan teknis: {e}")
+                    result_text = chat_completion.choices[0].message.content
                     
+                    st.success("Analisis Selesai Super Cepat!")
+                    st.markdown("### 📊 Laporan Keuangan Kafe:")
+                    st.markdown(result_text)
+                    
+                except Exception as e:
+                    st.error(f"Terjadi kesalahan teknis Groq: {e}")
+                                                               
