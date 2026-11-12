@@ -41,5 +41,5 @@ if uploaded_file is not None:
                 st.markdown(response.text)
                 
             except Exception as e:
-                st.error(Terjadi kesalahan teknis: {e})
+                st.error(f"Terjadi kesalahan teknis: {e}")
                 
