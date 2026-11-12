@@ -9,7 +9,7 @@ st.set_page_config(
 )
 
 st.title("☕ KafeReceipt AI (Groq Edition)")
-st.write("Aplikasi pencatat pengeluaran kafe kilat.")
+st.write("Aplikasi pembukuan pengeluaran kafe kilat.")
 
 groq_api_key = None
 try:
@@ -32,16 +32,16 @@ if uploaded_file is not None:
         else:
             with st.spinner("Memproses laporan keuangan kafe..."):
                 try:
-                    # Inisialisasi client Groq sesuai dokumentasi resmi
+                    # Inisialisasi client Groq persis seperti dokumentasi resmi
                     client = Groq(api_key=groq_api_key)
                     
-                    # Menggunakan model teks universal aktif sesuai dokumentasi Groq API Reference
-                    chat_completion = client.chat.completions.create(
-                        model="llama-3.1-70b-versatile",
+                    # Menggunakan model openai/gpt-oss-120b sesuai dokumentasi resmi Groq terbaru
+                    completion = client.chat.completions.create(
+                        model="openai/gpt-oss-120b",
                         messages=[
                             {
                                 "role": "system",
-                                "content": "Anda adalah auditor keuangan kafe profesional yang mencatat dan mengelompokkan pengeluaran ke dalam: 1. Bahan Baku Utama, 2. Operasional Bar & Dapur, 3. Utilitas & Lainnya."
+                                "content": "Anda adalah auditor keuangan kafe profesional. Tugas Anda mencatat dan mengelompokkan pengeluaran ke dalam kategori: 1. Bahan Baku Utama, 2. Operasional Bar & Dapur, 3. Utilitas & Lainnya."
                             },
                             {
                                 "role": "user",
@@ -51,11 +51,10 @@ if uploaded_file is not None:
                                     "Sertakan kolom: Nama Barang, Jumlah, Harga Satuan, Subtotal, dan Kategori Pengeluaran."
                                 )
                             }
-                        ],
-                        temperature=0.1,
+                        ]
                     )
                     
-                    result_text = chat_completion.choices[0].message.content
+                    result_text = completion.choices[0].message.content
                     
                     st.success("Analisis Selesai!")
                     st.markdown("### 📊 Laporan Keuangan Kafe:")
