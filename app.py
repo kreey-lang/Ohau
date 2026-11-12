@@ -7,7 +7,8 @@ st.set_page_config(page_title="KafeReceipt AI - Auditor Keuangan", page_icon="�
 st.title("☕ KafeReceipt AI Auditor")
 st.write("Aplikasi cerdas pencatat dan pengelompokan pengeluaran kafe secara instan dari foto struk.")
 
-api_key = st.text_input("Masukkan Google Gemini API Key:", type="password")
+# API Key sudah ditanam langsung di sini
+API_KEY = "AQ.Ab8RN6I1_mDyOjgaDaA1LOOzoTJF0SJCW8jGJX0lpVrDTuvLJQ"
 
 uploaded_file = st.file_uploader("Upload Foto Struk / Nota Belanja Kafe", type=["jpg", "jpeg", "png"])
 
@@ -16,11 +17,9 @@ if uploaded_file is not None:
     st.image(image, caption="Struk Belanja Kafe", use_container_width=True)
     
     if st.button("Analisis Struk Kafe"):
-        if not api_key:
-            st.warning("Mohon masukkan API Key terlebih dahulu, Bro!")
-        else:
-            with st.spinner("AI sedang membaca struk dan memilah pos pengeluaran kafe..."):
-                client = genai.Client(api_key=api_key)
+        with st.spinner("AI sedang membaca struk dan memilah pos pengeluaran kafe..."):
+            try:
+                client = genai.Client(api_key=API_KEY)
                 
                 prompt_kafe = (
                     "Tolong analisis foto struk belanja kafe ini. "
@@ -32,12 +31,15 @@ if uploaded_file is not None:
                     "Sertakan juga Total Pengeluaran di bagian akhir."
                 )
                 
-                # Menggunakan format parameter standar SDK gemini terbaru
                 response = client.models.generate_content(
                     model='gemini-1.5-flash',
-                    contents=[prompt_kafe, image]
+                    contents=[image, prompt_kafe]
                 )
                 
                 st.success("Analisis Pembukuan Selesai!")
                 st.markdown("### 📊 Laporan Keuangan Kafe:")
                 st.markdown(response.text)
+                
+            except Exception as e:
+                st.error(Terjadi kesalahan teknis: {e})
+                
