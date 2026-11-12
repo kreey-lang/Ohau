@@ -32,10 +32,10 @@ if uploaded_file is not None:
                     "Sertakan juga Total Pengeluaran di bagian akhir."
                 )
                 
-                # Mengirim gambar dan prompt dengan format aman untuk library genai terbaru
+                # Menggunakan format parameter standar SDK gemini terbaru
                 response = client.models.generate_content(
                     model='gemini-1.5-flash',
-                    contents=[image, prompt_kafe]
+                    contents=[prompt_kafe, image]
                 )
                 
                 st.success("Analisis Pembukuan Selesai!")
