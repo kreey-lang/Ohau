@@ -1,8 +1,8 @@
 import streamlit as st
 from google import genai
 from PIL import Image
+import os
 
-# Konfigurasi Tampilan Utama Web Kafe
 st.set_page_config(
     page_title="KafeReceipt AI - Auditor Keuangan", 
     page_icon="☕", 
@@ -12,7 +12,6 @@ st.set_page_config(
 st.title("☕ KafeReceipt AI Auditor")
 st.write("Aplikasi pencatat dan pengelompokan pengeluaran kafe secara instan dari foto struk.")
 
-# Mengambil API Key secara otomatis dari Streamlit Secrets (Aman untuk owner kafe)
 api_key = None
 try:
     if "GEMINI_API_KEY" in st.secrets:
@@ -20,10 +19,8 @@ try:
 except Exception:
     pass
 
-if not api_key:
-    api_key = st.text_input("Masukkan Google Gemini API Key:", type="password")
+api_key = st.text_input("Masukkan Google Gemini API Key / Token:", value=api_key if api_key else "", type="password")
 
-# Area Upload Foto Struk
 uploaded_file = st.file_uploader("Upload Foto Struk / Nota Belanja Kafe", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
@@ -32,11 +29,11 @@ if uploaded_file is not None:
     
     if st.button("Analisis Struk Kafe"):
         if not api_key:
-            st.warning("Mohon masukkan API Key terlebih dahulu!")
+            st.warning("Mohon masukkan API Key atau token terlebih dahulu, Bro!")
         else:
             with st.spinner("AI sedang membaca struk dan memilah pos pengeluaran kafe..."):
                 try:
-                    # Inisialisasi Client Google GenAI
+                    os.environ["GEMINI_API_KEY"] = api_key
                     client = genai.Client(api_key=api_key)
                     
                     prompt_kafe = (
@@ -49,16 +46,30 @@ if uploaded_file is not None:
                         "Sertakan juga Total Pengeluaran di bagian akhir."
                     )
                     
-                    # Menggunakan model terbaru gemini-3.8-flash sesuai instruksi sistem
-                    response = client.models.generate_content(
-                        model='gemini-3.8-flash',
-                        contents=[image, prompt_kafe]
-                    )
+                    # Daftar model cadangan otomatis untuk menghindari error 503 / 404
+                    response = None
+                    models_to_try = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash']
                     
-                    st.success("Analisis Pembukuan Selesai!")
-                    st.markdown("### 📊 Laporan Keuangan Kafe:")
-                    st.markdown(response.text)
+                    last_error = None
+                    for m in models_to_try:
+                        try:
+                            response = client.models.generate_content(
+                                model=m,
+                                contents=[image, prompt_kafe]
+                            )
+                            if response and response.text:
+                                break
+                        except Exception as err:
+                            last_error = err
+                            continue
                     
+                    if response and response.text:
+                        st.success("Analisis Pembukuan Selesai!")
+                        st.markdown("### 📊 Laporan Keuangan Kafe:")
+                        st.markdown(response.text)
+                    else:
+                        st.error(f"Server AI sedang padat, silakan coba klik sekali lagi. (Detail: {last_error})")
+                        
                 except Exception as e:
                     st.error(f"Terjadi kesalahan teknis: {e}")
-                
+                    
