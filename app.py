@@ -1,52 +1,90 @@
-import streamlit as st
+ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# Konfigurasi Halaman & Styling Estetik (CSS Modern)
+# Konfigurasi Halaman
 st.set_page_config(
-    page_title="Ohau AI - POS & Pembukuan UMKM", 
+    page_title="Ohau AI POS - Kasir Profesional", 
     page_icon="⚡", 
     layout="wide"
 )
 
-# Custom CSS biar tampilan ala Aplikasi Kasir Profesional / Modern
+# Custom CSS Ala Moka POS Professional UI
 st.markdown("""
     <style>
-    /* Styling Umum & Font */
-    .main {
-        background-color: #f8f9fa;
+    .stApp {
+        background-color: #0d1117;
+        color: #e6edf3;
     }
-    /* Kartu Produk / Box Estetik */
-    .product-card {
-        background-color: #ffffff;
-        padding: 15px;
+    /* Sembunyikan header/footer bawaan streamlit */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+    /* Branding Header Ohau AI */
+    .pos-header {
+        background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+        padding: 15px 20px;
         border-radius: 12px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        margin-bottom: 15px;
-        border: 1px solid #eaeaea;
+        border: 1px solid #374151;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
-    /* Judul Utama */
-    h1, h2, h3 {
-        color: #111827;
-        font-family: 'Helvetica Neue', sans-serif;
+    
+    /* Grid Kartu Menu ala Moka */
+    .moka-card {
+        background: #161b22;
+        border: 1px solid #30363d;
+        padding: 14px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+        margin-bottom: 12px;
+        transition: all 0.2s ease-in-out;
     }
-    /* Tombol Utama */
+    .moka-card:hover {
+        border-color: #238636;
+        transform: translateY(-2px);
+    }
+    .moka-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #f0f6fc;
+        margin-bottom: 4px;
+    }
+    .moka-price {
+        font-size: 14px;
+        color: #3fb950;
+        font-weight: bold;
+        margin-bottom: 2px;
+    }
+    .moka-stock {
+        font-size: 11px;
+        color: #8b949e;
+        margin-bottom: 8px;
+    }
+    
+    /* Tombol Konsisten */
     .stButton>button {
-        border-radius: 8px;
+        border-radius: 6px;
         font-weight: 600;
+        width: 100%;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# Inisialisasi Session State untuk database memori sementara
+# Inisialisasi Database Sementaranya (Session State)
 if "profil" not in st.session_state:
-    st.session_state.profil = {"nama": "Kafe Ohau", "pemilik": "Owner", "kategori": "Kafe / Resto"}
+    st.session_state.profil = {"nama": "Kafe Ohau Official", "pemilik": "Owner", "kategori": "Kafe & Resto"}
 
 if "produk" not in st.session_state:
     st.session_state.produk = pd.DataFrame([
         {"ID": 1, "Nama": "Kopi Susu Gula Aren", "Kategori": "Minuman", "Harga Jual": 18000, "Modal": 10000, "Stok": 50},
         {"ID": 2, "Nama": "Nasi Goreng Spesial", "Kategori": "Makanan", "Harga Jual": 25000, "Modal": 14000, "Stok": 30},
-        {"ID": 3, "Nama": "Es Teh Manis", "Kategori": "Minuman", "Harga Jual": 5000, "Modal": 2000, "Stok": 100}
+        {"ID": 3, "Nama": "Es Teh Manis", "Kategori": "Minuman", "Harga Jual": 5000, "Modal": 2000, "Stok": 100},
+        {"ID": 4, "Nama": "Roti Bakar Coklat", "Kategori": "Snack", "Harga Jual": 15000, "Modal": 8000, "Stok": 25},
+        {"ID": 5, "Nama": "Dimsum Mentai", "Kategori": "Snack", "Harga Jual": 20000, "Modal": 11000, "Stok": 20}
     ])
 
 if "transaksi" not in st.session_state:
@@ -58,54 +96,70 @@ if "pengeluaran" not in st.session_state:
 if "keranjang" not in st.session_state:
     st.session_state.keranjang = []
 
-# Sidebar Navigasi Utama
+# Sidebar Navigasi Menu ala POS Komersial
 st.sidebar.title("⚡ Ohau AI POS")
-st.sidebar.markdown(f"📍 Toko: **{st.session_state.profil['nama']}**")
+st.sidebar.markdown(f"📍 **{st.session_state.profil['nama']}**")
 st.sidebar.markdown("---")
 
 menu = st.sidebar.radio(
-    "Navigasi Menu:", 
-    ["🛒 Kasir (POS)", "📦 Kelola Produk & Stok", "💸 Catat Pengeluaran", "📊 Laporan & Grafik", "⚙️ Setup Profil Toko"]
+    "Menu Navigasi:", 
+    ["🛒 Kasir Utama (POS)", "📦 Kelola Produk & Stok", "💸 Catat Pengeluaran", "📊 Laporan & Grafik", "⚙️ Setup Profil Toko"]
 )
 
 # ==========================================
-# 1. MENU KASIR (POS)
+# 1. MENU KASIR UTAMA (MOKA STYLE GRID & CART)
 # ==========================================
-if menu == "🛒 Kasir (POS)":
-    st.title("🛒 Kasir & Transaksi Penjualan")
-    st.markdown("Pilih produk di bawah untuk melakukan transaksi cepat secara *real-time*.")
+if menu == "🛒 Kasir Utama (POS)":
+    # Header Identitas Toko ala Moka
+    st.markdown(f"""
+        <div class="pos-header">
+            <div>
+                <h3 style="margin:0; color: #f0f6fc;">⚡ Ohau AI Register</h3>
+                <p style="margin:0; font-size:13px; color:#8b949e;">Kasir Aktif: <b>{st.session_state.profil['pemilik']}</b> | Toko: <b>{st.session_state.profil['nama']}</b></p>
+            </div>
+            <div>
+                <span style="background: #238636; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;">● Live Connected</span>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
     
-    col1, col2 = st.columns([1.8, 1.2])
+    col_katalog, col_keranjang = st.columns([1.6, 1])
     
-    with col1:
-        st.subheader("📋 Daftar Menu Tersedia")
+    with col_katalog:
+        st.subheader("📋 Pilih Kategori Menu")
+        
+        # Filter Kategori ala Moka POS
+        kategori_list = ["Semua"] + list(st.session_state.produk["Kategori"].unique())
+        selected_kat = st.selectbox("Filter Kategori:", kategori_list, label_visibility="collapsed")
+        
         df_prod = st.session_state.produk
+        if selected_kat != "Semua":
+            df_prod = df_prod[df_prod["Kategori"] == selected_kat]
         
         if df_prod.empty:
-            st.warning("Belum ada produk. Tambahkan produk di menu Kelola Produk.")
+            st.warning("Tidak ada produk dalam kategori ini.")
         else:
+            # Layout Grid 2 Kolom per Baris
+            cols = st.columns(2)
             for index, row in df_prod.iterrows():
-                # Bungkus tiap produk pakai card estetik
-                with st.container():
+                col_target = cols[index % 2]
+                with col_target:
                     st.markdown(f"""
-                        <div style="background: white; padding: 12px; border-radius: 10px; border: 1px solid #e5e7eb; margin-bottom: 10px;">
-                            <b style="font-size: 16px; color: #1f2937;">{row['Nama']}</b><br>
-                            <span style="color: #059669; font-weight: bold;">Rp {row['Harga Jual']:,}</span> | 
-                            <span style="color: #6b7280; font-size: 13px;">Stok Tersedia: <b>{row['Stok']}</b></span>
+                        <div class="moka-card">
+                            <div class="moka-title">{row['Nama']}</div>
+                            <div class="moka-price">Rp {row['Harga Jual']:,}</div>
+                            <div class="moka-stock">Stok: {row['Stok']} pcs</div>
                         </div>
                     """, unsafe_allow_html=True)
                     
-                    c_qty, c_btn = st.columns([1, 1])
-                    qty_input = c_qty.number_input("Qty", min_value=1, max_value=int(row['Stok']) if row['Stok'] > 0 else 1, value=1, key=f"qty_{row['ID']}", label_visibility="collapsed")
-                    
-                    if c_btn.button("➕ Tambah ke Kasir", key=f"add_{row['ID']}", use_container_width=True):
+                    if st.button(f"＋ Tambah", key=f"moka_add_{row['ID']}", use_container_width=True):
                         if row['Stok'] <= 0:
-                            st.error("Stok habis, Bro!")
+                            st.error("Stok habis!")
                         else:
                             item_ada = False
                             for item in st.session_state.keranjang:
                                 if item['ID'] == row['ID']:
-                                    item['Qty'] += qty_input
+                                    item['Qty'] += 1
                                     item['Subtotal'] = item['Qty'] * item['Harga Jual']
                                     item_ada = True
                                     break
@@ -115,27 +169,40 @@ if menu == "🛒 Kasir (POS)":
                                     "Nama": row['Nama'],
                                     "Harga Jual": row['Harga Jual'],
                                     "Modal": row['Modal'],
-                                    "Qty": qty_input,
-                                    "Subtotal": qty_input * row['Harga Jual']
+                                    "Qty": 1,
+                                    "Subtotal": row['Harga Jual']
                                 })
-                            st.success(f"Berhasil ditambahkan!")
-                            st.rerurn()
+                            st.rerun()
 
-    with col2:
-        st.subheader("🛍️ Keranjang Belanja")
+    with col_keranjang:
+        st.subheader("🛍️ Current Order")
         if not st.session_state.keranjang:
-            st.info("Keranjang kasir masih kosong.")
+            st.info("Keranjang kosong. Silakan tap menu di sebelah kiri.")
         else:
             total_belanja = 0
             for i, item in enumerate(st.session_state.keranjang):
                 st.markdown(f"""
-                    <div style="background: #f3f4f6; padding: 8px 12px; border-radius: 8px; margin-bottom: 8px;">
-                        <b>{item['Nama']}</b> (x{item['Qty']})<br>
-                        <span style="color: #374151;">Rp {item['Subtotal']:,}</span>
+                    <div style="background: #161b22; padding: 10px; border-radius: 8px; border: 1px solid #30363d; margin-bottom: 8px;">
+                        <div style="font-weight: bold; color: #f0f6fc; font-size: 14px;">{item['Nama']}</div>
+                        <div style="font-size: 12px; color: #8b949e;">{item['Qty']}x @Rp {item['Harga Jual']:,} = <b style="color: #3fb950;">Rp {item['Subtotal']:,}</b></div>
                     </div>
                 """, unsafe_allow_html=True)
                 total_belanja += item['Subtotal']
-                if st.button("❌ Hapus Item", key=f"del_cart_{i}"):
+                
+                # Tombol Kuantitas Cepat Ala POS
+                c_min, c_plus, c_del = st.columns(3)
+                if c_min.button("➖", key=f"m_min_{i}"):
+                    if item['Qty'] > 1:
+                        item['Qty'] -= 1
+                        item['Subtotal'] = item['Qty'] * item['Harga Jual']
+                    else:
+                        st.session_state.keranjang.pop(i)
+                    st.rerun()
+                if c_plus.button("➕", key=f"m_plus_{i}"):
+                    item['Qty'] += 1
+                    item['Subtotal'] = item['Qty'] * item['Harga Jual']
+                    st.rerun()
+                if c_del.button("❌", key=f"m_del_{i}"):
                     st.session_state.keranjang.pop(i)
                     st.rerun()
             
@@ -144,7 +211,7 @@ if menu == "🛒 Kasir (POS)":
             
             metode_bayar = st.selectbox("Metode Pembayaran:", ["Tunai (Cash)", "QRIS", "Transfer Bank"])
             
-            if st.button("🚀 Selesaikan Pembayaran", type="primary", use_container_width=True):
+            if st.button("💳 Bayar Sekarang", type="primary", use_container_width=True):
                 waktu_sekarang = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 
                 transaksi_baru = {
@@ -156,128 +223,89 @@ if menu == "🛒 Kasir (POS)":
                 }
                 st.session_state.transaksi.append(transaksi_baru)
                 
+                # Potong stok otomatis
                 for item in st.session_state.keranjang:
                     st.session_state.produk.loc[st.session_state.produk['ID'] == item['ID'], 'Stok'] -= item['Qty']
                 
                 st.session_state.keranjang = []
-                st.success("Pembayaran Berhasil & Masuk Pembukuan! 🎉")
+                st.success("Transaksi Sukses & Tercatat di Pembukuan! 🎉")
                 st.balloons()
 
 # ==========================================
 # 2. KELOLA PRODUK & STOK
 # ==========================================
 elif menu == "📦 Kelola Produk & Stok":
-    st.title("📦 Manajemen Produk, Stok & Harga")
+    st.title("📦 Manajemen Inventaris & Menu")
     
-    with st.expander("➕ Klik untuk Tambah Menu / Produk Baru", expanded=False):
+    with st.expander("➕ Tambah Menu Produk Baru"):
         with st.form("form_produk"):
-            nama_p = st.text_input("Nama Produk (Contoh: Es Kopi Susu)")
-            kat_p = st.selectbox("Kategori", ["Minuman", "Makanan", "Snack", "Lainnya"])
-            harga_jual = st.number_input("Harga Jual ke Pelanggan (Rp)", min_value=0, value=10000, step=1000)
-            modal_p = st.number_input("Modal / HPP per Porsi (Rp)", min_value=0, value=5000, step=500)
+            nama_p = st.text_input("Nama Produk")
+            kat_p = st.selectbox("Kategori", ["Makanan", "Minuman", "Snack", "Lainnya"])
+            harga_jual = st.number_input("Harga Jual (Rp)", min_value=0, value=15000, step=1000)
+            modal_p = st.number_input("Modal / HPP (Rp)", min_value=0, value=8000, step=500)
             stok_awal = st.number_input("Stok Awal", min_value=0, value=50)
             
-            submitted = st.form_submit_button("Simpan Produk Baru", use_container_width=True)
-            if submitted and nama_p:
+            if st.form_submit_button("Simpan Produk", use_container_width=True) and nama_p:
                 new_id = len(st.session_state.produk) + 1
                 new_row = {"ID": new_id, "Nama": nama_p, "Kategori": kat_p, "Harga Jual": harga_jual, "Modal": modal_p, "Stok": stok_awal}
                 st.session_state.produk = pd.concat([st.session_state.produk, pd.DataFrame([new_row])], ignore_index=True)
                 st.success(f"Produk '{nama_p}' berhasil ditambahkan!")
                 st.rerun()
 
-    st.subheader("📋 Daftar Produk & Stok Saat Ini")
+    st.subheader("Daftar Stok Produk Saat Ini")
     st.dataframe(st.session_state.produk, use_container_width=True)
-    
-    st.subheader("⚠️ Peringatan Stok Menipis")
-    stok_tipis = st.session_state.produk[st.session_state.produk['Stok'] <= 5]
-    if not stok_tipis.empty:
-        st.error("Produk berikut hampir habis, segera restock!")
-        st.dataframe(stok_tipis, use_container_width=True)
-    else:
-        st.success("Aman! Semua stok produk masih mencukupi.")
 
 # ==========================================
 # 3. CATAT PENGELUARAN
 # ==========================================
 elif menu == "💸 Catat Pengeluaran":
-    st.title("💸 Pencatatan Pengeluaran Operasional")
-    st.write("Catat biaya operasional harian seperti belanja gas, bahan baku, listrik, dll.")
-    
+    st.title("💸 Catat Pengeluaran Operasional")
     with st.form("form_pengeluaran"):
-        ket_exp = st.text_input("Keterangan Pengeluaran (Contoh: Beli Gas 3kg & Tepung)")
-        kat_exp = st.selectbox("Kategori Pengeluaran", ["Bahan Baku Utama", "Operasional Bar & Dapur", "Utilitas & Lainnya"])
+        ket_exp = st.text_input("Keterangan (Contoh: Belanja Bahan Baku / Gas)")
+        kat_exp = st.selectbox("Kategori", ["Bahan Baku Utama", "Operasional", "Utilitas"])
         jumlah_exp = st.number_input("Total Biaya (Rp)", min_value=0, value=50000, step=5000)
         
-        btn_exp = st.form_submit_button("Simpan Pengeluaran", use_container_width=True)
-        if btn_exp and ket_exp:
-            waktu_exp = datetime.now().strftime("%Y-%m-%d %H:%M")
-            st.session_state.pengeluaran.append({
-                "Waktu": waktu_exp,
-                "Keterangan": ket_exp,
-                "Kategori": kat_exp,
-                "Jumlah": jumlah_exp
-            })
+        if st.form_submit_button("Simpan Pengeluaran", use_container_width=True) and ket_exp:
+            st.session_state.pengeluaran.append({"Waktu": datetime.now().strftime("%Y-%m-%d %H:%M"), "Keterangan": ket_exp, "Kategori": kat_exp, "Jumlah": jumlah_exp})
             st.success("Pengeluaran berhasil dicatat!")
             st.rerun()
             
-    st.subheader("📋 Riwayat Pengeluaran")
+    st.subheader("Riwayat Pengeluaran")
     if st.session_state.pengeluaran:
         st.dataframe(pd.DataFrame(st.session_state.pengeluaran), use_container_width=True)
-    else:
-        st.info("Belum ada pengeluaran tercatat.")
 
 # ==========================================
 # 4. LAPORAN & GRAFIK KEUANGAN
 # ==========================================
 elif menu == "📊 Laporan & Grafik":
-    st.title("📊 Dashboard Laporan & Grafik Keuangan")
+    st.title("📊 Dashboard Laporan Keuangan")
     
     total_omzet = sum([t['Total Omzet'] for t in st.session_state.transaksi])
     total_modal_terjual = sum([t['Total Modal'] for t in st.session_state.transaksi])
     total_pengeluaran_op = sum([p['Jumlah'] for p in st.session_state.pengeluaran])
+    laba_bersih = (total_omzet - total_modal_terjual) - total_pengeluaran_op
     
-    laba_kotor = total_omzet - total_modal_terjual
-    laba_bersih = laba_kotor - total_pengeluaran_op
+    c1, c2, c3 = st.columns(3)
+    c1.metric("💰 Total Omzet", f"Rp {total_omzet:,}")
+    c2.metric("💸 Total Pengeluaran", f"Rp {total_pengeluaran_op:,}")
+    c3.metric("📈 Laba Bersih", f"Rp {laba_bersih:,}")
     
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("💰 Total Omzet", f"Rp {total_omzet:,}")
-    col2.metric("📦 HPP / Modal Terjual", f"Rp {total_modal_terjual:,}")
-    col3.metric("💸 Total Pengeluaran", f"Rp {total_pengeluaran_op:,}")
-    col4.metric("📈 Laba Bersih", f"Rp {laba_bersih:,}")
-    
-    st.markdown("---")
-    
-    st.subheader("📋 Ringkasan Riwayat Transaksi Kasir")
+    st.subheader("Riwayat Transaksi Penjualan")
     if st.session_state.transaksi:
-        df_trx_summary = pd.DataFrame([{
-            "Waktu": t["Waktu"],
-            "Omzet": t["Total Omzet"],
-            "Metode Bayar": t["Metode"]
-        } for t in st.session_state.transaksi])
-        st.dataframe(df_trx_summary, use_container_width=True)
-    else:
-        st.info("Belum ada transaksi penjualan tercatat hari ini.")
-        
-    st.subheader("💡 Smart Insights (Analisis Ohau AI)")
-    if total_omzet > 0:
-        st.success(f"Mantap, Bro! Usaha **{st.session_state.profil['nama']}** hari ini mencatat omzet sehat sebesar Rp {total_omzet:,}. Pertahankan stok menu favorit agar pelanggan tidak kecewa!")
-    else:
-        st.info("Belum cukup data transaksi untuk dianalisis. Yuk mulai jualan dan catat transaksi di menu Kasir!")
+        st.dataframe(pd.DataFrame([{"Waktu": t["Waktu"], "Omzet": t["Total Omzet"], "Metode": t["Metode"]} for t in st.session_state.transaksi]), use_container_width=True)
 
 # ==========================================
 # 5. SETUP PROFIL TOKO
 # ==========================================
 elif menu == "⚙️ Setup Profil Toko":
-    st.title("⚙️ Pengaturan Profil Bisnis & Toko")
-    
+    st.title("⚙️ Pengaturan Profil Bisnis")
     with st.form("form_profil"):
-        nama_toko = st.text_input("Nama Bisnis / Toko", value=st.session_state.profil["nama"])
-        nama_owner = st.text_input("Nama Pemilik", value=st.session_state.profil["pemilik"])
-        kat_toko = st.text_input("Kategori Usaha", value=st.session_state.profil["kategori"])
+        nama_toko = st.text_input("Nama Toko / Usaha", value=st.session_state.profil["nama"])
+        nama_owner = st.text_input("Nama Pemilik / Kasir", value=st.session_state.profil["pemilik"])
         
-        save_prof = st.form_submit_button("Simpan Profil", use_container_width=True)
-        if save_prof:
-            st.session_state.profil = {"nama": nama_toko, "pemilik": nama_owner, "kategori": kat_toko}
-            st.success("Profil toko berhasil diperbarui!")
+        if st.form_submit_button("Simpan Profil", use_container_width=True):
+            st.session_state.profil["nama"] = nama_toko
+            st.session_state.profil["pemilik"] = nama_owner
+            st.success("Profil berhasil diperbarui!")
             st.rerun()
-                
+                            
