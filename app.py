@@ -46,29 +46,18 @@ if uploaded_file is not None:
                         "Sertakan juga Total Pengeluaran di bagian akhir."
                     )
                     
-                    # Daftar model cadangan otomatis untuk menghindari error 503 / 404
-                    response = None
-                    models_to_try = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash']
-                    
-                    last_error = None
-                    for m in models_to_try:
-                        try:
-                            response = client.models.generate_content(
-                                model=m,
-                                contents=[image, prompt_kafe]
-                            )
-                            if response and response.text:
-                                break
-                        except Exception as err:
-                            last_error = err
-                            continue
+                    # Menggunakan model gemini-3.8-flash yang valid sesuai sistem
+                    response = client.models.generate_content(
+                        model='gemini-3.8-flash',
+                        contents=[image, prompt_kafe]
+                    )
                     
                     if response and response.text:
                         st.success("Analisis Pembukuan Selesai!")
                         st.markdown("### 📊 Laporan Keuangan Kafe:")
                         st.markdown(response.text)
                     else:
-                        st.error(f"Server AI sedang padat, silakan coba klik sekali lagi. (Detail: {last_error})")
+                        st.error("Gagal mendapatkan respons dari AI.")
                         
                 except Exception as e:
                     st.error(f"Terjadi kesalahan teknis: {e}")
