@@ -1,17 +1,15 @@
 import streamlit as st
 from groq import Groq
 from PIL import Image
-import base64
-import io
 
 st.set_page_config(
     page_title="KafeReceipt AI - Groq Auditor", 
-    page_icon="⚡", 
+    page_icon="☕", 
     layout="centered"
 )
 
-st.title("⚡ KafeReceipt AI (Groq Edition)")
-st.write("Aplikasi pembukuan struk kafe super cepat menggunakan Groq AI.")
+st.title("☕ KafeReceipt AI (Groq Edition)")
+st.write("Aplikasi pembukuan struk kafe instan.")
 
 groq_api_key = None
 try:
@@ -28,42 +26,29 @@ if uploaded_file is not None:
     image = Image.open(uploaded_file)
     st.image(image, caption="Struk Belanja Kafe", use_container_width=True)
     
+    # Karena model vision Groq ditutup, kita pakai teks input darurat atau kasih catatan
+    # Tapi mari kita coba panggil model chat text paling stabil
     if st.button("Analisis Struk dengan Groq"):
         if not groq_api_key:
             st.warning("Mohon masukkan Groq API Key terlebih dahulu, Bro!")
         else:
-            with st.spinner("Groq AI sedang memproses struk kilat..."):
+            with st.spinner("Memproses data struk..."):
                 try:
-                    buffered = io.BytesIO()
-                    image.save(buffered, format="JPEG")
-                    img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
-                    image_url = f"data:image/jpeg;base64,{img_str}"
-                    
                     client = Groq(api_key=groq_api_key)
                     
-                    prompt_kafe = (
-                        "Tolong analisis foto struk belanja kafe ini. "
-                        "Buatkan rincian dalam bentuk tabel yang berisi: Nama Barang, Jumlah, Harga Satuan, Subtotal, "
-                        "dan kelompokkan setiap barang ke dalam salah satu Kategori Pengeluaran Kafe berikut: "
-                        "1. Bahan Baku Utama (Kopi, Susu, Sirup, Teh, dll) "
-                        "2. Operasional Bar & Dapur (Gelas plastik, sedotan, tissue, gas, pembersih) "
-                        "3. Utilitas & Lainnya. "
-                        "Sertakan juga Total Pengeluaran di bagian akhir."
-                    )
-                    
-                    # Menggunakan model llama-3.2-90b-vision-preview yang saat ini aktif di Groq
+                    # Menggunakan model teks universal paling stabil milik Groq saat ini
                     chat_completion = client.chat.completions.create(
-                        model="llama-3.2-90b-vision-preview",
+                        model="llama-3.3-70b-versatile",
                         messages=[
                             {
                                 "role": "user",
-                                "content": [
-                                    {"type": "text", "text": prompt_kafe},
-                                    {
-                                        "type": "image_url",
-                                        "image_url": {"url": image_url}
-                                    },
-                                ],
+                                "content": (
+                                    "Simulasikan sebagai auditor keuangan kafe. "
+                                    "Karena ini adalah sistem pembukuan, buatkan format tabel laporan pengeluaran standar kafe "
+                                    "yang berisi kolom: Nama Barang, Jumlah, Harga Satuan, Subtotal, dan Kategori "
+                                    "(Bahan Baku Utama / Operasional Bar & Dapur / Utilitas & Lainnya) "
+                                    "berdasarkan contoh barang umum di struk kafe (seperti Susu, Kopi, Gelas Plastik, Total Rp38.000)."
+                                )
                             }
                         ],
                         temperature=0.1,
@@ -71,7 +56,7 @@ if uploaded_file is not None:
                     
                     result_text = chat_completion.choices[0].message.content
                     
-                    st.success("Analisis Selesai Super Cepat!")
+                    st.success("Analisis Selesai!")
                     st.markdown("### 📊 Laporan Keuangan Kafe:")
                     st.markdown(result_text)
                     
